@@ -8,11 +8,10 @@ const connectDB = require('./db/connect')
 const cors = require('cors')
 const { errorHandler } = require('./util')
 
+app.use(cors())
 app.use(express.json())
 
 app.use('/api/v1', userRouter)
-
-cors()
 
 app.use(errorHandler)
 

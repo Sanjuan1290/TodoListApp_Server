@@ -9,8 +9,15 @@ const register = async (req, res) => {
     try{
         const existingUser = await User.findOne({ email })
 
-        if(existingUser) throw new CustomError('Email already in use.', 409)
-        if(password.length < 6) throw new CustomError('Password must be at least 6 characters long.', 400)
+        if(existingUser){
+            res.status(409).json({ message: 'Email already in use.' })
+            return
+        }
+
+        if(password.length < 6) {
+            res.status(400).json({ message: 'Password must be at least 6 characters long.' })
+            return
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -31,18 +38,22 @@ const login = async (req, res) => {
     try{
         const user = await User.findOne({ email })
 
-        if(!user) throw new CustomError('User does not exist.', 404)
-
+        if(!user){
+            res.status(404).json({ message: 'User does not exist.' })
+            return
+        } 
         const isMatch = await bcrypt.compare(password, user.password)
-        if(!isMatch) throw new CustomError('Wrong Password. Try again.', 400)
-
+        if(!isMatch){
+            res.status(400).json({ message: 'Wrong Password. Try again.' })
+            return
+        } 
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '1h'})
 
         res.status(200).json({ message: 'Login Successfully.', token, tasks: user.tasks })
 
     }catch(error){
         console.error(error);
-        console.error('Register Failed!');
+        console.error('Login Failed!');
     }
 }
 
