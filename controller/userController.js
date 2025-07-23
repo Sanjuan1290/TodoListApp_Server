@@ -7,7 +7,7 @@ const register = async (req, res) => {
     const { fullName, email, password } = req.body
 
     try{
-        const existingUser = User.findOne({ email })
+        const existingUser = await User.findOne({ email })
 
         if(existingUser) throw new CustomError('Email already in use.', 409)
         if(password.length < 6) throw new CustomError('Password must be at least 6 characters long.', 400)
@@ -16,7 +16,7 @@ const register = async (req, res) => {
 
         const user = await User.create( { fullName, email, password: hashedPassword } )
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiredIn: '1h' })
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         res.status(201).json({ message: 'Successfully created an account.', token })
     }catch(error){
@@ -29,7 +29,7 @@ const login = async (req, res) => {
     const { email, password } = req.body
 
     try{
-        const user = User.findOne({ email })
+        const user = await User.findOne({ email })
 
         if(!user) throw new CustomError('User does not exist.', 404)
 
