@@ -60,7 +60,7 @@ const login = async (req, res) => {
 const verify = async (req, res) => {
     const { id } = req.user
     const user = await User.findOne({ _id: id })
-    
+
     if(!user){
         throw new CustomError("User cannot be found after verifying the JWT!", 404)
     }
@@ -68,5 +68,30 @@ const verify = async (req, res) => {
     res.status(200).json({ message: "Token valid", tasks: user.tasks })
 }
 
+const addTask = async (req, res) => {
+    const authHeader = req.headers.authorization
+    const { title, description, priority, dueDate, status } = req.body
 
-module.exports ={ register, login, verify }
+    if(!authHeader || !authHeader.startsWith('Bearer')) throw new CustomError('Unauthorized', 401)
+
+    const token = authHeader.split('Bearer ')[1]
+    const { id } = jwt.verify(token, process.env.JWT_SECRET)
+
+    const updatedUser = await User.findOneAndUpdate( 
+        {_id: id}, { $push: { tasks: { title, description, priority, dueDate: new Date(dueDate), status } } }, {new: true} )
+
+    console.log(updatedUser);
+    if(!updatedUser) throw new CustomError("User not found! this shouldn't happen btw")
+
+    res.status(200).json({ message: 'Added Task Successfully.', tasks: updatedUser.tasks})
+}
+
+const editTask = async (req, res) => {
+    
+}
+
+const removeTask = async (req, res) => {
+    
+}
+
+module.exports ={ register, login, verify, addTask, editTask, removeTask }
