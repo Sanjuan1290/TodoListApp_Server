@@ -58,7 +58,14 @@ const login = async (req, res) => {
 }
 
 const verify = async (req, res) => {
-    res.status(200).json({ message: "Token valid"})
+    const { id } = req.user
+    const user = await User.findOne({ _id: id })
+    
+    if(!user){
+        throw new CustomError("User cannot be found after verifying the JWT!", 404)
+    }
+
+    res.status(200).json({ message: "Token valid", tasks: user.tasks })
 }
 
 
