@@ -9,6 +9,6 @@ router.route('/verify').get(auth, verify)
 
 router.route('/addTask').post(addTask)
 router.route('/editTask').post(editTask)
-router.route('/removeTask').post(removeTask)
+router.route('/deleteOneTask').delete(removeTask)
 
 module.exports = router

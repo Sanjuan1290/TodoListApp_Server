@@ -91,7 +91,28 @@ const editTask = async (req, res) => {
 }
 
 const removeTask = async (req, res) => {
-    
+    const authHeader = req.headers.authorization
+    const { taskId } = req.body
+
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const token = authHeader.split('Bearer ')[1]
+    const { id } = jwt.verify(token, process.env.JWT_SECRET)
+
+    const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $pull: { tasks: { _id: taskId } } },
+        { new: true }
+    )
+
+    if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.status(200).json({ message: 'Task deleted', tasks: updatedUser.tasks })
 }
+
 
 module.exports ={ register, login, verify, addTask, editTask, removeTask }
