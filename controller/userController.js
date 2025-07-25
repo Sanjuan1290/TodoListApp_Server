@@ -187,16 +187,17 @@ const updateUserProfile = async (req, res) => {
     const { id } =  jwt.verify(token, process.env.JWT_SECRET)
 
     const user = await User.findOne({ _id: id })
-    if(!currentPassword || !newPassword || !confirmNewPassword){
+    if(currentPassword.trim() === '' && newPassword.trim() === '' && confirmNewPassword.trim() === ''){
+        if(fullName === user.fullName) return
         const updatedUser = await User.findOneAndUpdate({ _id: id }, { $set:{ fullName } }, { new: true })
-        res.status(200).json({ message: 'Successfully Updated. 😊', user: updatedUser})
+        res.status(200).json({ message: 'Successfully Updated Name. 😊', user: updatedUser})
         return
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password)
 
     if(!isMatch) throw new CustomError('Wrong Password. Try again!', 400)
-    if(newPassword < 6) throw new CustomError('Password must be altease 6 characters.', 400)
+    if(newPassword.length < 6) throw new CustomError('Password must be altease 6 characters.', 400)
     if(newPassword !== confirmNewPassword) throw new CustomError('Wrong Confirm new password.', 400)
     
     const newPasswordHashed = await bcrypt.hash(newPassword, 10) 
