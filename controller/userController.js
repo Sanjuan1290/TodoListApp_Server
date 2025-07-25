@@ -106,8 +106,8 @@ const editTask = async (req, res) => {
         }
     },
     {new: true})
+    if(!updatedUser) throw new CustomError('user not found', 404)
 
-    console.log(updatedUser);
 
     res.status(200).json({ message: 'Edit Task Successfully.', tasks: updatedUser.tasks})
 
@@ -155,7 +155,6 @@ const toggleTask = async (req, res) => {
     },
     {new: true})
 
-    console.log(updatedUser);
 
     res.status(200).json({ message: 'Toggle Task Successfully.', tasks: updatedUser.tasks})
 }
