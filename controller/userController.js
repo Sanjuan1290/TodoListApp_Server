@@ -157,8 +157,22 @@ const toggleTask = async (req, res) => {
     console.log(updatedUser);
 
     res.status(200).json({ message: 'Toggle Task Successfully.', tasks: updatedUser.tasks})
+}
 
+const getUserProfile = async (req, res) =>{
+    const authHeader = req.headers.authorization
+
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const token = authHeader.split('Bearer ')[1]
+    const { id } = jwt.verify(token, process.env.JWT_SECRET)
+
+    const user = await User.findOne({ _id: id })
+
+    res.status(200).json({message: 'Successfully Get UserProfile', user})
 }
 
 
-module.exports ={ register, login, verify, addTask, editTask, removeTask, toggleTask }
+module.exports ={ register, login, verify, addTask, editTask, removeTask, toggleTask, getUserProfile }
