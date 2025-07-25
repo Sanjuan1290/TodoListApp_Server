@@ -136,5 +136,29 @@ const removeTask = async (req, res) => {
     res.status(200).json({ message: 'Task deleted', tasks: updatedUser.tasks })
 }
 
+const toggleTask = async (req, res) => {
+    const authHeader = req.headers.authorization
+    const { taskId, newStatus } = req.body
 
-module.exports ={ register, login, verify, addTask, editTask, removeTask }
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const token = authHeader.split('Bearer ')[1]
+    const { id } = jwt.verify(token, process.env.JWT_SECRET)
+
+    const updatedUser = await User.findOneAndUpdate({_id: id, "tasks._id": taskId }, {
+        $set: {
+            "tasks.$.status": newStatus
+        }
+    },
+    {new: true})
+
+    console.log(updatedUser);
+
+    res.status(200).json({ message: 'Toggle Task Successfully.', tasks: updatedUser.tasks})
+
+}
+
+
+module.exports ={ register, login, verify, addTask, editTask, removeTask, toggleTask }
