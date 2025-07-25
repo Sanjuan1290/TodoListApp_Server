@@ -87,7 +87,29 @@ const addTask = async (req, res) => {
 }
 
 const editTask = async (req, res) => {
-    
+    const task = req.body
+    const authHeader = req.headers.authorization
+
+    if(!authHeader || !authHeader.startsWith('Bearer')) throw new CustomError('Unauthorized', 401)
+
+    const token = authHeader.split('Bearer ')[1]
+    const {id} = jwt.verify(token, process.env.JWT_SECRET)
+
+    const updatedUser = await User.findOneAndUpdate({_id: id, "tasks._id": task._id }, {
+        $set: {
+            "tasks.$.title": task.title,
+            "tasks.$.description": task.description,
+            "tasks.$.status": task.status,
+            "tasks.$.dueDate": task.dueDate,
+            "tasks.$.priority": task.priority
+        }
+    },
+    {new: true})
+
+    console.log(updatedUser);
+
+    res.status(200).json({ message: 'Edit Task Successfully.', tasks: updatedUser.tasks})
+
 }
 
 const removeTask = async (req, res) => {

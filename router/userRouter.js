@@ -8,7 +8,7 @@ router.route('/login').post(login)
 router.route('/verify').get(auth, verify)
 
 router.route('/addTask').post(addTask)
-router.route('/editTask').post(editTask)
+router.route('/editTask').patch(editTask)
 router.route('/deleteOneTask').delete(removeTask)
 
 module.exports = router
