@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { register, login, verify, addTask, editTask, removeTask, toggleTask, getUserProfile } = require('../controller/userController')
+const { register, login, verify, addTask, editTask, removeTask, toggleTask, getUserProfile, updateUserProfile } = require('../controller/userController')
 const { auth } = require('../util')
 
 router.route('/register').post(register)
@@ -13,5 +13,6 @@ router.route('/deleteOneTask').delete(removeTask)
 
 router.route('/toggleTask').patch(toggleTask)
 router.route('/getProfile').get(getUserProfile)
+router.route('/updateProfile').patch(updateUserProfile)
 
 module.exports = router

@@ -2,6 +2,7 @@ const User = require('../model/userModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { CustomError } = require('../util')
+const nodemon = require('nodemon')
 
 const register = async (req, res) => {
     const { fullName, email, password } = req.body
@@ -174,5 +175,35 @@ const getUserProfile = async (req, res) =>{
     res.status(200).json({message: 'Successfully Get UserProfile', user})
 }
 
+const updateUserProfile = async (req, res) => {
+    const authHeader = req.headers.authorization
+    const { fullName, currentPassword, newPassword, confirmNewPassword } = req.body
 
-module.exports ={ register, login, verify, addTask, editTask, removeTask, toggleTask, getUserProfile }
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const token = authHeader.split('Bearer ')[1]
+    const { id } =  jwt.verify(token, process.env.JWT_SECRET)
+
+    const user = await User.findOne({ _id: id })
+    if(!currentPassword || !newPassword || !confirmNewPassword){
+        const updatedUser = await User.findOneAndUpdate({ _id: id }, { $set:{ fullName } }, { new: true })
+        res.status(200).json({ message: 'Successfully Updated. 😊', user: updatedUser})
+        return
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password)
+
+    if(!isMatch) throw new CustomError('Wrong Password. Try again!', 400)
+    if(newPassword < 6) throw new CustomError('Password must be altease 6 characters.', 400)
+    if(newPassword !== confirmNewPassword) throw new CustomError('Wrong Confirm new password.', 400)
+    
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10) 
+    const updatedUser = await User.findOneAndUpdate({ _id: id }, { $set:{ fullName, password: newPasswordHashed} }, { new: true })
+
+    res.status(200).json({ message: 'Successfully Updated. 😊', user: updatedUser})
+}
+
+
+module.exports ={ register, login, verify, addTask, editTask, removeTask, toggleTask, getUserProfile, updateUserProfile }
